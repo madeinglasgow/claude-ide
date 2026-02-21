@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import FileBrowser from './components/FileBrowser';
 import Editor from './components/Editor';
-import Terminal from './components/Terminal';
+import ConversationPanel from './components/ConversationPanel';
 import Preview from './components/Preview';
 
 export default function App() {
@@ -235,12 +235,12 @@ export default function App() {
         </div>
       </div>
 
-      {/* Vertical resize handle between left panel and terminal */}
+      {/* Vertical resize handle between left panel and conversation */}
       <div className="v-resize-handle" onMouseDown={handleVResizeStart} />
 
-      {/* RIGHT COLUMN - TERMINAL (hero) */}
+      {/* RIGHT COLUMN - CONVERSATION (hero) */}
       <div className={`terminal-area${previewActive ? ' terminal-area-split' : ''}`}>
-        {/* Terminal sub-panel */}
+        {/* Conversation sub-panel */}
         <div
           className="terminal-sub-panel"
           style={previewActive ? { width: `${previewSplit}%` } : undefined}
@@ -255,7 +255,7 @@ export default function App() {
             </button>
           )}
           <div className="panel-header">
-            <span>Terminal</span>
+            <span>Claude</span>
             <div className="panel-header-actions">
               <button
                 className={`preview-toggle-btn${previewActive ? ' active' : ''}${previewPortUp ? ' port-live' : ''}`}
@@ -266,8 +266,8 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div className="panel-content">
-            <Terminal />
+          <div className="panel-content conversation-content">
+            <ConversationPanel />
           </div>
         </div>
 

@@ -23,7 +23,7 @@ COPY client/ ./client/
 # Build client
 RUN cd client && npm run build
 
-# Install Claude Code CLI
+# Install Claude Code CLI (kept for terminal fallback)
 RUN npm install -g @anthropic-ai/claude-code
 
 # Create workspace directory
@@ -32,6 +32,7 @@ RUN mkdir -p /workspace
 ENV NODE_ENV=production
 ENV WORKSPACE_DIR=/workspace
 ENV IDE_PORT=3000
+# ANTHROPIC_API_KEY must be provided at runtime
 
 EXPOSE 3000
 

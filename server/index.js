@@ -5,6 +5,7 @@ const { WebSocketServer } = require('ws');
 const cors = require('cors');
 const filesRouter = require('./files');
 const { attachPty } = require('./pty');
+const { attachConversation } = require('./conversation');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,13 +25,18 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// WebSocket server for terminal
-const wss = new WebSocketServer({ noServer: true });
+// WebSocket servers
+const terminalWss = new WebSocketServer({ noServer: true });
+const conversationWss = new WebSocketServer({ noServer: true });
 
 server.on('upgrade', (request, socket, head) => {
   if (request.url === '/ws/terminal') {
-    wss.handleUpgrade(request, socket, head, (ws) => {
+    terminalWss.handleUpgrade(request, socket, head, (ws) => {
       attachPty(ws);
+    });
+  } else if (request.url === '/ws/conversation') {
+    conversationWss.handleUpgrade(request, socket, head, (ws) => {
+      attachConversation(ws);
     });
   } else {
     socket.destroy();

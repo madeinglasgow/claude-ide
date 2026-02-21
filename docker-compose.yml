@@ -15,6 +15,7 @@ services:
     environment:
       - WORKSPACE_DIR=/workspace
       - TERMINAL_CMD=/bin/bash
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     command: node server/index.js
 
 volumes:
