@@ -83,3 +83,16 @@ The conversation header has a "Preview" toggle button that opens an embedded ifr
 **Port conventions**: User frontend runs on port **5173**, backend on port **8000**. The IDE server uses port 3000.
 
 Note: In dev mode, port 5173 is occupied by the IDE's own Vite dev server, so preview only works in production mode (`node server/index.js` on port 3000).
+
+## Known Limitation: No Persistent Processes via Conversation
+
+The Agent SDK's Bash tool executes commands ephemerally — each invocation runs a command, captures output, and exits. It does not maintain a persistent shell session. This means:
+
+- **Dev servers cannot be started from the conversation panel.** When Claude runs `npm run dev` or similar long-running commands through the SDK's Bash tool, the process is killed when the tool call completes (or times out waiting for it to finish). There is no persistent PTY to keep background processes alive.
+- **The Preview panel does not work with conversation-only mode.** Since dev servers can't stay running, port 5173 never becomes active, and the preview iframe shows "Start your app on port 5173 to see it here."
+- **This is an architectural gap, not a bug.** The original simple-vscode used a terminal (xterm.js + node-pty) which maintained a persistent shell session. Processes started there (like dev servers) kept running. The Agent SDK was designed for request/response tool use, not persistent process management.
+
+**Potential solutions (not yet implemented):**
+1. **Terminal fallback toggle** (Phase 5 in build plan) — Add a mode switch in the header between "Claude" and "Terminal" views. Users start dev servers in terminal mode and use conversation for everything else. Downside: the two modes are independent and don't share state.
+2. **Side-by-side layout** — Show conversation and a small terminal panel simultaneously, so users always have a persistent shell available for long-running processes.
+3. **Background process manager** — A server-side service that starts and manages long-running processes on Claude's behalf, separate from the Bash tool. Would require custom SDK tool integration.
