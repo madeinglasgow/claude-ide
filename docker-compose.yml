@@ -1,0 +1,21 @@
+services:
+  ide:
+    build: .
+    ports:
+      - "3000:3000"
+      - "5173:5173"
+      - "8000:8000"
+    volumes:
+      - workspace:/workspace
+      - ./server:/app/server
+      - ./client/src:/app/client/src
+      - ./client/public:/app/client/public
+      - ./client/index.html:/app/client/index.html
+      - ./client/vite.config.js:/app/client/vite.config.js
+    environment:
+      - WORKSPACE_DIR=/workspace
+      - TERMINAL_CMD=/bin/bash
+    command: node server/index.js
+
+volumes:
+  workspace:
