@@ -11,10 +11,12 @@ export default function ConversationPanel() {
     status,
     sessionId,
     permissionRequest,
+    permissionMode,
     sendMessage,
     respondPermission,
     interrupt,
     newSession,
+    changePermissionMode,
   } = useConversation();
 
   const isGenerating = status === 'thinking' || status === 'streaming' || status === 'tool_executing';
@@ -32,7 +34,13 @@ export default function ConversationPanel() {
       )}
 
       <div className="conversation-footer">
-        <StatusBar status={status} onInterrupt={interrupt} onNewSession={newSession} />
+        <StatusBar
+          status={status}
+          permissionMode={permissionMode}
+          onPermissionModeChange={changePermissionMode}
+          onInterrupt={interrupt}
+          onNewSession={newSession}
+        />
         <MessageInput
           onSend={sendMessage}
           disabled={status === 'connecting' || status === 'waiting_permission'}

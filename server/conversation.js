@@ -10,6 +10,7 @@ function attachConversation(ws) {
   let messageGenerator = null;
   let messageResolve = null;
   let closed = false;
+  let currentPermissionMode = 'bypassPermissions'; // default to auto-allow in Docker
 
   function send(msg) {
     if (!closed && ws.readyState === 1) {
@@ -41,10 +42,13 @@ function attachConversation(ws) {
 
   // Permission request handling via WebSocket
   const pendingPermissions = new Map();
+  const pendingPermissionInputs = new Map(); // store original input for pass-through on allow
   let permissionRequestId = 0;
 
   async function canUseTool(toolName, input, { signal }) {
     const requestId = String(++permissionRequestId);
+
+    pendingPermissionInputs.set(requestId, input);
 
     send({
       type: 'permission_request',
@@ -60,6 +64,7 @@ function attachConversation(ws) {
       if (signal) {
         signal.addEventListener('abort', () => {
           pendingPermissions.delete(requestId);
+          pendingPermissionInputs.delete(requestId);
           resolve({ behavior: 'deny', message: 'Aborted' });
         }, { once: true });
       }
@@ -73,7 +78,9 @@ function attachConversation(ws) {
       abortController,
       cwd,
       includePartialMessages: true,
-      canUseTool,
+      permissionMode: currentPermissionMode,
+      allowDangerouslySkipPermissions: true,
+      canUseTool: currentPermissionMode === 'bypassPermissions' ? undefined : canUseTool,
       systemPrompt: {
         type: 'preset',
         preset: 'claude_code',
@@ -213,12 +220,26 @@ function attachConversation(ws) {
       case 'permission_response': {
         const resolve = pendingPermissions.get(msg.requestId);
         if (resolve) {
+          const originalInput = pendingPermissionInputs.get(msg.requestId) || {};
           pendingPermissions.delete(msg.requestId);
+          pendingPermissionInputs.delete(msg.requestId);
           if (msg.behavior === 'allow') {
-            resolve({ behavior: 'allow', updatedInput: msg.updatedInput || {} });
+            resolve({ behavior: 'allow', updatedInput: originalInput });
           } else {
             resolve({ behavior: 'deny', message: msg.message || 'Denied by user' });
           }
+        }
+        break;
+      }
+
+      case 'set_permission_mode': {
+        const valid = ['bypassPermissions', 'acceptEdits', 'default'];
+        if (valid.includes(msg.mode)) {
+          currentPermissionMode = msg.mode;
+          if (activeQuery && activeQuery.setPermissionMode) {
+            activeQuery.setPermissionMode(msg.mode).catch(() => {});
+          }
+          send({ type: 'permission_mode', mode: currentPermissionMode });
         }
         break;
       }
@@ -249,6 +270,7 @@ function attachConversation(ws) {
 
   // Send ready message
   send({ type: 'status', state: 'idle' });
+  send({ type: 'permission_mode', mode: currentPermissionMode });
 }
 
 module.exports = { attachConversation };

@@ -7,6 +7,7 @@ export default function useConversation() {
   const [status, setStatus] = useState('connecting');
   const [sessionId, setSessionId] = useState(null);
   const [permissionRequest, setPermissionRequest] = useState(null);
+  const [permissionMode, setPermissionMode] = useState('bypassPermissions');
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
 
@@ -86,6 +87,10 @@ export default function useConversation() {
           input: msg.input,
         });
         setStatus('waiting_permission');
+        break;
+
+      case 'permission_mode':
+        setPermissionMode(msg.mode);
         break;
 
       case 'result':
@@ -254,6 +259,10 @@ export default function useConversation() {
     setStatus('idle');
   }, []);
 
+  const changePermissionMode = useCallback((mode) => {
+    send({ type: 'set_permission_mode', mode });
+  }, []);
+
   const newSession = useCallback(() => {
     setMessages([]);
     setSessionId(null);
@@ -276,9 +285,11 @@ export default function useConversation() {
     status,
     sessionId,
     permissionRequest,
+    permissionMode,
     sendMessage,
     respondPermission,
     interrupt,
     newSession,
+    changePermissionMode,
   };
 }

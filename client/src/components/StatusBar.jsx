@@ -10,7 +10,13 @@ const STATUS_LABELS = {
   error: 'Error',
 };
 
-export default function StatusBar({ status, onInterrupt, onNewSession }) {
+const PERMISSION_MODE_LABELS = {
+  bypassPermissions: 'Auto-allow all',
+  acceptEdits: 'Prompt for bash',
+  default: 'Prompt for all',
+};
+
+export default function StatusBar({ status, permissionMode, onPermissionModeChange, onInterrupt, onNewSession }) {
   const label = STATUS_LABELS[status] || status;
   const isActive = status === 'thinking' || status === 'streaming' || status === 'tool_executing';
 
@@ -21,6 +27,16 @@ export default function StatusBar({ status, onInterrupt, onNewSession }) {
         <span className="status-label">{label}</span>
       </div>
       <div className="status-actions">
+        <select
+          className="permission-mode-select"
+          value={permissionMode}
+          onChange={(e) => onPermissionModeChange(e.target.value)}
+          title="Tool permission mode"
+        >
+          <option value="bypassPermissions">{PERMISSION_MODE_LABELS.bypassPermissions}</option>
+          <option value="acceptEdits">{PERMISSION_MODE_LABELS.acceptEdits}</option>
+          <option value="default">{PERMISSION_MODE_LABELS.default}</option>
+        </select>
         {isActive && (
           <button className="status-action-btn" onClick={onInterrupt}>Stop</button>
         )}

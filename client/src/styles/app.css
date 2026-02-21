@@ -908,6 +908,23 @@ html, body, #root {
   border-color: var(--accent);
 }
 
+.permission-mode-select {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.permission-mode-select:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* Message input */
 .message-input-container {
   display: flex;
